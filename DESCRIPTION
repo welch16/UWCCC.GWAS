@@ -19,4 +19,12 @@ Imports:
     Polychrome,
     ggplot2,
     forcats,
-    stats
+    stats,
+    stringr,
+    tibble,
+    tidyr,
+    GenomicRanges,
+    IRanges,
+    S4Vectors,
+    AnnotationDbi,
+    snakecase
