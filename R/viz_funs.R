@@ -1,22 +1,27 @@
 #' Manhattan plot for the GWAS data
-#' 
+#'
 #' @param gwas_data a `data.frame` with at least the column chrom, pos, and
 #'  p.value
 #' @param sig a numeric value with the significance level
 #' @param sig_color color for the significance threshold line
 #' @return a `ggplot` object with the Manhattan plot
-#' @param chr_colors colors to use per chromosome, if there are two colors is 
+#' @param chr_colors colors to use per chromosome, if there are two colors is
 #'  going to color odd even chromosomes
-#' 
+#' @param label_data a `data.frame` with at least the columns chrom, pos, and
+#'  `label_var`
+#' @param label_var the variable used to label the data
+#'
 #' @export
 #' @importFrom magrittr `%>%` `%<>%`
 #' @importFrom dplyr arrange select group_by mutate
-#' @importFrom dplyr ungroup count distinct group_split
+#' @importFrom dplyr ungroup count distinct group_split left_join
+#' @importFrom rlang enquo
 #' @importFrom ggplot2 ggplot aes geom_point geom_hline scale_size_continuous
-#' @importFrom ggplot2 scale_x_continuous labs scale_color_manual 
+#' @importFrom ggplot2 scale_x_continuous labs scale_color_manual
 #' @importFrom forcats fct_collapse
+#' @importFrom ggrepel geom_text_repel
 manhattan_plot <- function(gwas_data, sig = 5e-8, sig_color = "red",
-  chr_colors = c("grey40", "darkgrey")) {
+  chr_colors = c("grey40", "darkgrey"), label_data = NULL, label_var = NULL) {
 
   `%<>%` <- magrittr::`%<>%`
 
@@ -69,6 +74,14 @@ manhattan_plot <- function(gwas_data, sig = 5e-8, sig_color = "red",
 
   yl <- abs(floor(max(gwas_data$logp)) + 10)
 
+  if (!is.null(label_data)) {
+
+    label_var <- rlang::enquo(label_var)
+    label_data %<>%
+      dplyr::left_join(gwas_data, by = c("chrom", "pos"))
+
+  }
+
   mplot <- gwas_data %>%
     ggplot2::ggplot(
       ggplot2::aes(x = bp_pos, y = logp, color = chrom_col,
@@ -85,6 +98,13 @@ manhattan_plot <- function(gwas_data, sig = 5e-8, sig_color = "red",
     x = NULL,
     color = "chr",
     y = expression(-log[10](p)))
+
+  if (!is.null(label_data)) {
+
+    mplot <- mplot +
+      ggrepel::geom_text_repel(data = label_data, aes(label = !!label_var),
+        colour = "black", size = 4)
+  }
 
   chrom <- NULL
   pos <- NULL
@@ -126,15 +146,15 @@ qqplot_pvalue <- function(gwas_data) {
       obs = -log10(p),
       exp = -log10(ppoints(nobs)))
 
-  log10Pe <- expression(paste("expected -log"[10], plain(p.value)))
-  log10Po <- expression(paste("observed -log"[10], plain(p.value)))
+  log10pe <- expression(paste("expected -log"[10], plain(p.value)))
+  log10po <- expression(paste("observed -log"[10], plain(p.value)))
 
   qqplot <- plot_data %>%
     ggplot2::ggplot(ggplot2::aes(x = exp, y = obs, size = obs)) +
     ggplot2::geom_point(alpha = .75, shape = 1) +
     ggplot2::geom_abline(intercept = 0, slope = 1, alpha = 0.5) +
     ggplot2::scale_size_continuous(range = c(0.5, 1)) +
-    ggplot2::labs(x = log10Pe, y = log10Po)
+    ggplot2::labs(x = log10pe, y = log10po)
 
   id <- NULL
   p <- NULL
@@ -143,3 +163,4 @@ qqplot_pvalue <- function(gwas_data) {
   return(qqplot)
 
 }
+

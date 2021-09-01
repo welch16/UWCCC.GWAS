@@ -34,7 +34,7 @@ partition_by_snp <- function(data, snp_dist = 250e3, pval_thr = 1e-8) {
       dplyr::distinct(locus)
   } else {
     warning("There are not significant SNPs, increase significant threshold")
-    outcome <- NULL
+    outcome <- tibble::tibble()
   }
 
   pos <- id <- p <- locus <- NULL

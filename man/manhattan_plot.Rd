@@ -8,7 +8,9 @@ manhattan_plot(
   gwas_data,
   sig = 5e-08,
   sig_color = "red",
-  chr_colors = c("grey40", "darkgrey")
+  chr_colors = c("grey40", "darkgrey"),
+  label_data = NULL,
+  label_var = NULL
 )
 }
 \arguments{
@@ -21,6 +23,11 @@ p.value}
 
 \item{chr_colors}{colors to use per chromosome, if there are two colors is
 going to color odd even chromosomes}
+
+\item{label_data}{a \code{data.frame} with at least the columns chrom, pos, and
+\code{label_var}}
+
+\item{label_var}{the variable used to label the data}
 }
 \value{
 a \code{ggplot} object with the Manhattan plot
